@@ -1,0 +1,67 @@
+#!/sbin/sh
+# =============================================================================
+#  My Own Splash Screen – update-binary
+#  Standard Magisk module installer bootstrap.
+# =============================================================================
+
+SKIPUNZIP=1
+
+# Source Magisk bootstrap utilities if running inside Magisk app (bootmode)
+if [ -d /data/adb/magisk ]; then
+  . /data/adb/magisk/util_functions.sh 2>/dev/null || true
+fi
+
+# Load Magisk's own module util functions (covers both older and newer Magisk)
+if [ -f /data/adb/magisk/module_installer.sh ]; then
+  . /data/adb/magisk/module_installer.sh
+fi
+
+# Provide fallback stubs for TWRP / KernelSU environments
+if ! type ui_print >/dev/null 2>&1; then
+  ui_print() { echo "ui_print $1" >&"$OUTFD" 2>/dev/null || echo "$1"; }
+fi
+
+if ! type abort >/dev/null 2>&1; then
+  abort() {
+    ui_print ""
+    ui_print "  ✗ FATAL: $1"
+    ui_print ""
+    exit 1
+  }
+fi
+
+if ! type set_perm_recursive >/dev/null 2>&1; then
+  set_perm_recursive() {
+    local dir="$1" user="$2" group="$3" dmode="$4" fmode="$5"
+    chown -R "$user:$group" "$dir" 2>/dev/null
+    find "$dir" -type d -exec chmod "$dmode" {} \; 2>/dev/null
+    find "$dir" -type f -exec chmod "$fmode" {} \; 2>/dev/null
+  }
+fi
+
+if ! type set_perm >/dev/null 2>&1; then
+  set_perm() {
+    chown "$2:$3" "$1" 2>/dev/null
+    chmod "$4" "$1" 2>/dev/null
+  }
+fi
+
+# Ensure MODPATH is set
+if [ -z "$MODPATH" ]; then
+  MODPATH="/data/adb/modules_update/my_own_splash_screen"
+  mkdir -p "$MODPATH"
+fi
+
+# Extract module files from zip
+unzip -o "$ZIPFILE" \
+  'module.prop' \
+  'service.sh' \
+  'post-fs-data.sh' \
+  'customize.sh' \
+  -d "$MODPATH" >/dev/null 2>&1
+
+unzip -o "$ZIPFILE" 'up_param/*' -d "$MODPATH" >/dev/null 2>&1
+unzip -o "$ZIPFILE" 'tools/*'    -d "$MODPATH" >/dev/null 2>&1
+
+# Hand off to customize.sh
+. "$MODPATH/customize.sh"

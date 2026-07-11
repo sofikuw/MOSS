@@ -1,0 +1,7 @@
+id=my_own_splash_screen
+name=My Own Splash Screen
+version=v1.0
+versionCode=1
+author=sofikuw
+description=Replaces the Samsung boot splash screen via up_param partition. Drop in your up_param.bin and flash. Works on Stock & Custom ROMs (Exynos & Snapdragon).
+updateJson=
