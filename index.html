@@ -1,0 +1,312 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>MOSS - Samsung / Magisk & KernelSU Module</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full m-0 bg-[#f7f9fc] font-sans text-slate-950 selection:bg-cyan-100 selection:text-cyan-950">
+    <div id="root" class="h-full">
+        <main class="min-h-screen overflow-x-hidden bg-[#f7f9fc]">
+            <!-- Grid pattern background -->
+            <div class="pointer-events-none fixed inset-0 opacity-60 [background-image:linear-gradient(rgba(148,163,184,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.07)_1px,transparent_1px)] [background-size:44px_44px]"></div>
+
+            <div class="relative mx-auto max-w-[1240px] px-4 pb-12 pt-4 sm:px-8 sm:pb-16 sm:pt-7 lg:px-10">
+                <!-- Header -->
+                <header class="flex items-center justify-between gap-3 border-b border-slate-200/80 pb-4 sm:gap-5 sm:pb-5">
+                    <a href="#top" class="group flex items-center gap-3" aria-label="MOSS Home">
+                        <span>
+                            <span class="block text-sm font-bold tracking-tight text-slate-900">MOSS (My Own Splash Screen)</span>
+                            <span class="block font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">sofikuw / MOSS</span>
+                        </span>
+                    </a>
+                    <nav class="flex items-center gap-2 sm:gap-3">
+                        <a href="https://github.com/sofikuw/MOSS" target="_blank" rel="noreferrer" class="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950 sm:inline-flex">
+                            View on GitHub 
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+                        </a>
+                    </nav>
+                </header>
+
+                <!-- Hero Section -->
+                <section id="top" class="grid items-center gap-9 py-10 sm:gap-12 sm:py-14 lg:grid-cols-[0.88fr_1.12fr] lg:gap-16 lg:py-20">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-700">Samsung Exynos</span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600">Root utility</span>
+                        </div>
+                        <h1 class="mt-6 max-w-[620px] text-[clamp(2.6rem,12vw,5.55rem)] font-semibold leading-[0.96] tracking-[-0.065em] text-slate-950 sm:text-[clamp(2.8rem,6vw,5.55rem)]">
+                            Make the first frame <span class="text-cyan-600">yours.</span>
+                        </h1>
+                        <p class="mt-6 max-w-[560px] text-base leading-7 text-slate-600 sm:mt-7 sm:text-[17px] sm:leading-8">
+                            Replace Samsung's boot splash, charging, and download-mode visuals with your own <code class="rounded-md bg-slate-200/70 px-1.5 py-0.5 font-mono text-[0.9em] text-slate-800">up_param.bin</code> -- without changing the rest of your system.
+                        </p>
+                        
+                        <div class="mt-8 grid max-w-[530px] grid-cols-3 border-y border-slate-200 py-4 sm:mt-10">
+                            <div class="border-r border-slate-200">
+                                <div class="font-mono text-xl font-semibold text-slate-950">01</div>
+                                <div class="mt-1 text-xs text-slate-500">module ZIP</div>
+                            </div>
+                            <div class="border-r border-slate-200 pl-3 sm:pl-4">
+                                <div class="font-mono text-xl font-semibold text-slate-950">03</div>
+                                <div class="mt-1 text-xs text-slate-500">visual surfaces</div>
+                            </div>
+                            <div class="pl-3 sm:pl-4">
+                                <div class="font-mono text-xl font-semibold text-slate-950">0</div>
+                                <div class="mt-1 text-xs text-slate-500">system edits</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Preview Card -->
+                    <div class="lg:pl-4">
+                        <div class="relative min-h-[430px] overflow-hidden rounded-[28px] border border-slate-800/80 bg-[#0b1220] p-5 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.65)] sm:p-7">
+                            <div class="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl"></div>
+                            <div class="absolute -bottom-28 -left-16 h-64 w-64 rounded-full bg-violet-500/20 blur-3xl"></div>
+                            
+                            <div class="relative flex items-center justify-between border-b border-white/10 pb-5 text-white">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="font-mono text-[11px] font-semibold tracking-[0.18em] text-slate-300">UP_PARAM / VISUAL PREVIEW</span>
+                                </div>
+                                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">BEYOND2LTE</span>
+                            </div>
+
+                            <div class="relative flex min-h-[315px] items-center justify-center py-8">
+                                <div class="absolute h-56 w-56 rounded-full border border-cyan-300/20"></div>
+                                <div class="absolute h-72 w-72 rounded-full border border-violet-300/10"></div>
+                                <div class="relative w-full max-w-[230px] overflow-hidden rounded-[24px] border border-white/15 bg-slate-950 shadow-2xl">
+                                    <div class="aspect-[0.78] overflow-hidden">
+                                        <img id="previewImage" alt="Samsung splash screen preview" class="h-full w-full object-cover opacity-90 transition-opacity duration-150" src="boot.jpg">
+                                    </div>
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent px-5 pb-5 pt-20">
+                                        <div id="previewBadge" class="font-mono text-[10px] uppercase tracking-[0.22em] text-cyan-200">CUSTOM FRAME</div>
+                                        <div id="previewTitle" class="mt-1 text-lg font-semibold tracking-tight text-white">Boot identity</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="relative flex items-end justify-between gap-4 border-t border-white/10 pt-5">
+                                <div>
+                                    <div id="previewLabel" class="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan-300">PREVIEW / BOOT FRAME</div>
+                                    <p id="previewDescription" class="mt-2 max-w-[300px] text-sm leading-6 text-slate-400">The first frame after power-on, now carrying your custom identity.</p>
+                                </div>
+                                <div class="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 text-slate-400 sm:flex">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Surface Selectors (Boot, Charging, Download) -->
+                <section class="grid gap-2 border-y border-slate-200/80 py-2 sm:gap-4 sm:py-5 md:grid-cols-3">
+                    <button id="btnBoot" onclick="selectSurface('boot')" class="surface-btn active group flex items-center gap-3 rounded-xl p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 sm:items-start sm:gap-4 sm:rounded-2xl sm:p-4 bg-white shadow-sm ring-1 ring-slate-200">
+                        <span class="btn-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-10 sm:w-10 bg-slate-950 text-cyan-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg>
+                        </span>
+                        <span>
+                            <span class="block text-sm font-bold text-slate-900">Boot splash</span>
+                            <span class="mt-1 hidden text-sm leading-5 text-slate-500 sm:block">The first frame after power-on, now carrying your custom identity.</span>
+                        </span>
+                    </button>
+
+                    <button id="btnCharging" onclick="selectSurface('charging')" class="surface-btn group flex items-center gap-3 rounded-xl p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 sm:items-start sm:gap-4 sm:rounded-2xl sm:p-4 hover:bg-white/70">
+                        <span class="btn-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-10 sm:w-10 bg-slate-200/70 text-slate-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
+                        </span>
+                        <span>
+                            <span class="block text-sm font-bold text-slate-900">Charging screen</span>
+                            <span class="mt-1 hidden text-sm leading-5 text-slate-500 sm:block">The visual shown while the device is connected and receiving power.</span>
+                        </span>
+                    </button>
+
+                    <button id="btnDownload" onclick="selectSurface('download')" class="surface-btn group flex items-center gap-3 rounded-xl p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 sm:items-start sm:gap-4 sm:rounded-2xl sm:p-4 hover:bg-white/70">
+                        <span class="btn-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-10 sm:w-10 bg-slate-200/70 text-slate-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><circle cx="10" cy="7" r="1"></circle><circle cx="4" cy="20" r="1"></circle><path d="M4.7 19.3 19 5"></path><path d="m21 3-3 1 2 2Z"></path><path d="M9.26 7.68 5 12l2 5"></path><path d="m10 14 5 2 3.5-3.5"></path><path d="m18 12 1-1 1 1-1 1Z"></path></svg>
+                        </span>
+                        <span>
+                            <span class="block text-sm font-bold text-slate-900">Download mode</span>
+                            <span class="mt-1 hidden text-sm leading-5 text-slate-500 sm:block">The Odin / USB screen that appears when entering download mode.</span>
+                        </span>
+                    </button>
+                </section>
+
+                <!-- Installation Instructions -->
+                <section id="install" class="grid gap-8 py-14 sm:gap-12 sm:py-20 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20">
+                    <div>
+                        <div class="font-mono text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">02 / Official Documentation</div>
+                        <h2 class="mt-5 text-3xl font-semibold tracking-[-0.045em] text-slate-950 sm:text-5xl">Read instructions in the original source README.</h2>
+                        <p class="mt-5 max-w-md text-base leading-7 text-slate-600">Full installation procedures, flashing guidelines, and recovery options are maintained in the official repository documentation.</p>
+                        
+                        <div class="mt-6">
+                            <a href="https://github.com/sofikuw/MOSS#readme" target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-cyan-600/20 transition hover:bg-cyan-500">
+                                Open README on GitHub
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+                            </a>
+                        </div>
+
+                        <div class="mt-7 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 sm:mt-8 sm:p-5">
+                            <div class="flex items-start gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 h-5 w-5 shrink-0 text-amber-700"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                                <div>
+                                    <div class="text-sm font-bold text-amber-950">Compatibility Note</div>
+                                    <p class="mt-1 text-sm leading-6 text-amber-900/75">For Samsung Exynos devices on stock or custom ROMs. Snapdragon variants -- especially most US and Canadian models -- are not supported.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <article class="group grid grid-cols-[32px_1fr_auto] items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/70 p-4 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-lg hover:shadow-slate-900/5 sm:grid-cols-[64px_1fr_auto] sm:gap-4 sm:p-6">
+                            <div class="font-mono text-sm font-semibold text-slate-400">01</div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900 sm:text-base">Check system compatibility</h3>
+                                <p class="mt-1.5 max-w-[590px] text-sm leading-6 text-slate-500">Ensure your target Samsung device is powered by an Exynos SoC with root access established.</p>
+                            </div>
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-100 bg-cyan-50 text-cyan-700 sm:h-10 sm:w-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg>
+                            </span>
+                        </article>
+
+                        <article class="group grid grid-cols-[32px_1fr_auto] items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/70 p-4 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-lg hover:shadow-slate-900/5 sm:grid-cols-[64px_1fr_auto] sm:gap-4 sm:p-6">
+                            <div class="font-mono text-sm font-semibold text-slate-400">02</div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900 sm:text-base">Review official instructions</h3>
+                                <p class="mt-1.5 max-w-[590px] text-sm leading-6 text-slate-500">Follow the README located at <code class="font-mono text-xs bg-slate-100 px-1 py-0.5 rounded text-slate-700">sofikuw/MOSS</code> for exact flashing and configuration steps.</p>
+                            </div>
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl border border-violet-100 bg-violet-50 text-violet-700 sm:h-10 sm:w-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            </span>
+                        </article>
+
+                        <article class="group grid grid-cols-[32px_1fr_auto] items-start gap-3 rounded-2xl border border-slate-200/80 bg-white/70 p-4 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-lg hover:shadow-slate-900/5 sm:grid-cols-[64px_1fr_auto] sm:gap-4 sm:p-6">
+                            <div class="font-mono text-sm font-semibold text-slate-400">03</div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900 sm:text-base">Flash via Magisk or KernelSU</h3>
+                                <p class="mt-1.5 max-w-[590px] text-sm leading-6 text-slate-500">Install the module ZIP inside your manager app and verify image updates upon reboot.</p>
+                            </div>
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-700 sm:h-10 sm:w-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
+                            </span>
+                        </article>
+                    </div>
+                </section>
+
+                <!-- Footer -->
+                <footer class="flex flex-col gap-3 border-t border-slate-200/80 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:text-sm">
+                    <div>
+                        <span class="font-semibold text-slate-900">MOSS</span>
+                        <span class="mx-2 text-slate-300">/</span>
+                        <span>sofikuw/MOSS</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                        <a href="https://github.com/sofikuw/MOSS" target="_blank" rel="noreferrer" class="inline-flex items-center gap-1.5 font-semibold text-slate-700 transition hover:text-cyan-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
+                            Source on GitHub 
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3 w-3"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+                        </a>
+                        <span>GPL-3.0</span>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Surface Switcher Logic -->
+    <script>
+        const surfaceData = {
+            boot: {
+                image: 'boot.jpg',
+                fallback: 'https://via.placeholder.com/230x295/0f172a/06b6d4?text=boot.jpg',
+                badge: 'CUSTOM FRAME',
+                title: 'Boot identity',
+                label: 'PREVIEW / BOOT FRAME',
+                description: 'The first frame after power-on, now carrying your custom identity.'
+            },
+            charging: {
+                image: 'charging.jpg',
+                fallback: 'https://via.placeholder.com/230x295/0f172a/eab308?text=charging.jpg',
+                badge: 'POWER SURFACE',
+                title: 'Charging visual',
+                label: 'PREVIEW / CHARGING SCREEN',
+                description: 'The visual shown while the device is connected and receiving power.'
+            },
+            download: {
+                image: 'download.jpg',
+                fallback: 'https://via.placeholder.com/230x295/0f172a/a855f7?text=download.jpg',
+                badge: 'ODIN / USB MODE',
+                title: 'Download mode',
+                label: 'PREVIEW / DOWNLOAD MODE',
+                description: 'The Odin / USB screen that appears when entering download mode.'
+            }
+        };
+
+        // Attach initial image fallback
+        const initialImg = document.getElementById('previewImage');
+        if (initialImg) {
+            initialImg.onerror = function() {
+                this.onerror = null;
+                this.src = surfaceData.boot.fallback;
+            };
+        }
+
+        function selectSurface(surfaceKey) {
+            const data = surfaceData[surfaceKey];
+            if (!data) return;
+
+            const img = document.getElementById('previewImage');
+            img.style.opacity = '0';
+
+            setTimeout(() => {
+                img.onerror = function() {
+                    this.onerror = null;
+                    this.src = data.fallback;
+                };
+                img.src = data.image;
+
+                document.getElementById('previewBadge').textContent = data.badge;
+                document.getElementById('previewTitle').textContent = data.title;
+                document.getElementById('previewLabel').textContent = data.label;
+                document.getElementById('previewDescription').textContent = data.description;
+                img.style.opacity = '0.9';
+            }, 150);
+
+            ['boot', 'charging', 'download'].forEach(key => {
+                const btnId = 'btn' + key.charAt(0).toUpperCase() + key.slice(1);
+                const btn = document.getElementById(btnId);
+                if (!btn) return;
+                
+                const icon = btn.querySelector('.btn-icon');
+                
+                if (key === surfaceKey) {
+                    btn.className = 'surface-btn active group flex items-center gap-3 rounded-xl p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 sm:items-start sm:gap-4 sm:rounded-2xl sm:p-4 bg-white shadow-sm ring-1 ring-slate-200';
+                    if (icon) icon.className = 'btn-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-10 sm:w-10 bg-slate-950 text-cyan-300';
+                } else {
+                    btn.className = 'surface-btn group flex items-center gap-3 rounded-xl p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 sm:items-start sm:gap-4 sm:rounded-2xl sm:p-4 hover:bg-white/70';
+                    if (icon) icon.className = 'btn-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:h-10 sm:w-10 bg-slate-200/70 text-slate-600';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
