@@ -1,44 +1,35 @@
 #!/system/bin/sh
-# =============================================================================
-#  Samsung Splash Changer – post-fs-data.sh
-#  Runs early in boot (post-fs-data stage, before Zygote).
-#  Re-applies the custom splash so it persists across OTAs / factory resets.
-# =============================================================================
+# Re-applies the custom splash early in boot when the partition differs.
 
 MODDIR="${0%/*}"
-CUSTOM_BIN="/data/adb/samsung_splash_backup/up_param_custom.bin"
-DEV_PATH_FILE="$MODDIR/up_param/device_path.txt"
-APPLIED_FLAG="/data/adb/samsung_splash_backup/.applied_this_boot"
+[ -d "$MODDIR" ] || MODDIR=$(cd "$(dirname "$0")" 2>/dev/null && pwd)
+. "$MODDIR/tools/common.sh" 2>/dev/null || exit 0
 
-# Remove stale per-boot flag from a previous boot
-rm -f "$APPLIED_FLAG"
+CUSTOM_BIN="$MODDIR/up_param/up_param.bin"
+DEV_FILE="$MODDIR/up_param/device_path.txt"
+FLAG="$MODDIR/.applied_this_boot"
 
-# No custom payload yet — module installed but no images provided
+rm -f "$FLAG"
+
 [ -f "$CUSTOM_BIN" ] && [ -s "$CUSTOM_BIN" ] || exit 0
+moss_is_tar "$CUSTOM_BIN" || exit 0
 
-# Read saved device path
 UP_PARAM_DEV=""
-if [ -f "$DEV_PATH_FILE" ]; then
-  UP_PARAM_DEV=$(tr -d '[:space:]' < "$DEV_PATH_FILE")
+if [ -f "$DEV_FILE" ]; then
+  UP_PARAM_DEV=$(tr -d '[:space:]' < "$DEV_FILE")
 fi
-
-# Fallback detection if saved path is missing or stale
 if [ -z "$UP_PARAM_DEV" ] || [ ! -b "$UP_PARAM_DEV" ]; then
-  for p in /dev/block/by-name/up_param /dev/block/bootdevice/by-name/up_param; do
-    [ -b "$p" ] && { UP_PARAM_DEV="$p"; break; }
-  done
-  if [ -z "$UP_PARAM_DEV" ]; then
-    for p in /dev/block/platform/*/by-name/up_param; do
-      [ -b "$p" ] && { UP_PARAM_DEV="$p"; break; }
-    done
+  UP_PARAM_DEV=$(moss_find_up_param) || exit 0
+fi
+[ -n "$UP_PARAM_DEV" ] && [ -b "$UP_PARAM_DEV" ] || exit 0
+
+if command -v cmp >/dev/null 2>&1; then
+  if moss_compare_prefix "$UP_PARAM_DEV" "$CUSTOM_BIN"; then
+    touch "$FLAG" 2>/dev/null
+    exit 0
   fi
 fi
 
-[ -z "$UP_PARAM_DEV" ] && exit 0
-[ -b "$UP_PARAM_DEV" ] || exit 0
-
-# Apply the custom splash
-if dd if="$CUSTOM_BIN" of="$UP_PARAM_DEV" bs=4096 2>/dev/null; then
-  # Set flag so service.sh knows post-fs-data already handled this boot
-  touch "$APPLIED_FLAG"
+if moss_write_verified "$CUSTOM_BIN" "$UP_PARAM_DEV"; then
+  touch "$FLAG" 2>/dev/null
 fi

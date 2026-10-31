@@ -1,113 +1,147 @@
-# My Own Splash Screen – Magisk Module
+# MOSS – My Own Splash Screen
 
 **by sofikuw**
 
-Change the Samsung boot splash screen, charging screen, download mode screen,
-and more — by flashing your own `up_param.bin` directly to the `up_param`
-partition. Works on **Stock ROM** and **Custom ROMs** (LineageOS, crDroid,
-AOSP-based, etc.) on **Exynos** Samsung devices.
+Change the Samsung boot splash, charging screen, download-mode screen and
+other pre-boot images by writing your own `up_param.bin` to the `up_param`
+partition.
+
+MOSS works as a **Magisk / KernelSU / APatch module** and as a **standalone
+flashable ZIP** for TWRP-based custom recoveries.
 
 ---
 
-## ⚠️ Qualcomm (Snapdragon) Devices — Read This First
+## Compatibility
 
-**This module does NOT work on Qualcomm Snapdragon Samsung devices.**
+| Install method | Supported |
+|---|---|
+| Magisk app / KernelSU / APatch manager | Yes |
+| TWRP, OrangeFox, Pitch Black Recovery, SHRP (TWRP-based) | Yes |
+| Other recoveries that run `META-INF/com/google/android/update-binary` | Usually |
+| LineageOS Recovery / AOSP Recovery | No third-party ZIPs — signed OTAs only |
+| Stock Samsung recovery | No |
+| Samsung Exynos devices with an `up_param` partition | Yes |
+| Samsung Snapdragon devices | Not supported (see below) |
 
-On Snapdragon Samsung devices, the bootloader is locked down by Qualcomm's
-Secure Boot implementation and does not allow writing to the `up_param`
-partition from Android, even with root. The `dd` command will either return
-"Permission denied" or appear to succeed but the splash will not change on
-reboot — Qualcomm's bootloader validates and ignores any modified partition.
+A **TWRP-based recovery** can flash this ZIP even if the phone is not rooted.
+In that case the splash is written once and the restore backup is saved to
+internal storage, an SD card, or `/data/adb/` when available. Persistence
+across firmware updates requires a root manager
+(Magisk, KernelSU or APatch) so the boot scripts can run.
 
-**Affected devices include:**
-- Galaxy S21 / S22 / S23 / S24 (Snapdragon variants — SM-G/S **U**, **W**, **T**, **V** suffix)
-- Galaxy A-series with Snapdragon (e.g. A53 5G SM-A536U)
-- Any Samsung sold in the **USA or Canada** (almost always Snapdragon)
-
-**Exynos variants (Europe, Latin America, Asia — non-USA) work fine.**
-
-Check your SoC If it says Samsung Exynos → you're good to go.
+> **LineageOS Recovery cannot flash arbitrary ZIPs.** It verifies the package
+> signature and only accepts LineageOS-signed OTA packages. This is a recovery
+> design limitation, not a MOSS bug. Use a TWRP-based recovery, the root
+> manager app, or the Termux `dd` method instead.
 
 ---
 
-## Table of Contents
+## Qualcomm (Snapdragon) devices
+
+**This module is intended for Samsung Exynos devices only.**
+
+On many Snapdragon Samsung devices the `up_param` partition exists but is
+protected or validated by the bootloader. A write can be rejected, or it can
+appear to succeed and be ignored on the next boot.
+
+Reported affected models include US/Canadian Snapdragon variants such as
+`SM-...U`, `SM-...W`, `SM-...T` and some `SM-...V` models, plus Snapdragon
+A-series devices.
+
+If your device reports a Samsung Exynos SoC, you are in the supported group.
+
+---
+
+## Table of contents
 
 1. [What is up_param?](#what-is-up_param)
-2. [First device that used up_param](#first-device-with-up_param)
+2. [First devices with up_param](#first-devices-with-up_param)
 3. [Get your up_param.bin](#get-your-up_parambin)
-   - [Method A — Copy directly from your device (easiest)](#method-a--copy-directly-from-your-device-easiest)
-   - [Method B — Download from Linageos](#method-b--download-from-lineageos)
+   - [Method A — Copy it from your device](#method-a--copy-it-from-your-device-easiest)
+   - [Method B — Download from LineageOS](#method-b--download-from-lineageos)
    - [Method C — Download from SamFW](#method-c--download-from-samfw)
 4. [Extract & edit the images](#extract--edit-the-images)
 5. [Repack into up_param.bin](#repack-into-up_parambin)
 6. [Flash methods](#flash-methods)
-   - [Method 1 — Magisk module (this module)](#method-1--magisk-module-recommended)
-   - [Method 2 — Termux dd (one-shot)](#method-2--termux-dd-one-shot)
-7. [Image reference](#image-reference)
-8. [Troubleshooting](#troubleshooting)
-9. [Restore original splash](#restore-original-splash)
+   - [Method 1 — Flash the ZIP in recovery](#method-1--flash-the-zip-in-recovery)
+   - [Method 2 — Install from a root manager](#method-2--install-from-a-root-manager)
+   - [Method 3 — Termux dd (one-shot)](#method-3--termux-dd-one-shot)
+7. [How MOSS protects the partition](#how-moss-protects-the-partition)
+8. [Image reference](#image-reference)
+9. [Troubleshooting](#troubleshooting)
+10. [Restore the original splash](#restore-the-original-splash)
+11. [Credits](#credits)
+12. [License](#license)
 
 ---
 
 ## What is up_param?
 
-`up_param` is a small dedicated partition on Samsung devices (around 8–16 MB).
-It stores the pre-boot splash/logo images that the bootloader shows **before
-Android even starts**. These images live entirely outside the Android
-filesystem and must be written directly to the raw block device.
+`up_param` is a small dedicated partition on Samsung Exynos devices. It stores
+the pre-boot splash/logo images shown by the bootloader **before Android
+starts**. These images live outside the Android filesystem and must be written
+directly to the raw block device.
 
-The partition contains a **GNU tar archive** (no compression) holding all the
-splash JPEG images. This module backs up the original, writes your custom
-`up_param.bin`, and reapplies it on every boot for persistence.
+The partition contains an **uncompressed tar archive** holding the splash JPEG
+images. The archive is usually named `up_param.bin` when extracted from Samsung
+firmware.
+
+MOSS backs up the original partition, writes your custom archive, and (when a
+root manager is installed) restores the custom splash if the partition is
+overwritten later.
 
 ---
 
-## First device with up_param
+## First devices with up_param
 
-The `up_param` partition with the tar-of-JPEGs format was introduced with the
-**Samsung Galaxy S6 (SM-G920F / SM-G920T)** released in **April 2015**.
+The tar-of-JPEGs `up_param` format was introduced with the **Samsung Galaxy S6
+(SM-G920F / SM-G920T)** in **April 2015**.
 
-All Samsung flagship and mid-range Exynos devices from the S6 onward use the
-same format: S7, S8, S9, S10, S20, S21, S22, S23, S24, Note 5 through
-Note 20, A-series (A50 and later), M-series, and more — **on Exynos only**.
+Many Exynos Samsung devices from the S6 onward use the same format, including
+S7, S8, S9, S10, S20, S21, S22, S23, S24, Note 5 through Note 20, and various
+A-series and M-series models. Availability and format can vary by model and
+firmware, so always keep a backup.
 
 ---
 
 ## Get your up_param.bin
 
-### Method A — Copy directly from your device (easiest)
+### Method A — Copy it from your device (easiest)
 
-No PC, Read it straight off your own
-device's partition with root. This gives you the exact up_param for your
-device with zero guesswork.
+This gives you the exact `up_param` for your device with no guesswork.
 
-**In Termux (install from [F-Droid](https://f-droid.org/packages/com.termux/) — NOT Play Store):**
+**In Termux** (install from [F-Droid](https://f-droid.org/packages/com.termux/),
+not the Play Store):
 
 ```bash
 su
 dd if=/dev/block/by-name/up_param of=/sdcard/up_param.bin bs=4096
 ```
 
-If that path doesn't exist, find the real one first:
+If that path does not exist, find the real one:
+
 ```bash
 su
 ls -la /dev/block/by-name/ | grep -i up_param
 ```
-Then use whatever path it shows, for example:
+
+Then use the path it shows, for example:
+
 ```bash
 dd if=/dev/block/bootdevice/by-name/up_param of=/sdcard/up_param.bin bs=4096
 ```
 
 **If you get "Permission denied":**
+
 ```bash
-# Make sure Termux is granted root, then:
 su
 setenforce 0
 dd if=/dev/block/by-name/up_param of=/sdcard/up_param.bin bs=4096
 setenforce 1
 ```
 
-Or write to internal storage if /sdcard is blocked:
+Or write to internal storage if `/sdcard` is blocked:
+
 ```bash
 su
 dd if=/dev/block/by-name/up_param of=/data/local/tmp/up_param.bin bs=4096
@@ -116,115 +150,118 @@ cp /data/local/tmp/up_param.bin /sdcard/up_param.bin
 ```
 
 **Via ADB from a PC:**
+
 ```bash
 adb root
 adb shell dd if=/dev/block/by-name/up_param of=/sdcard/up_param.bin bs=4096
 adb pull /sdcard/up_param.bin
 ```
 
-Verify it worked — you should see the list of JPEG filenames:
+Verify it worked. You should see the JPEG filenames:
+
 ```bash
 tar -tf /sdcard/up_param.bin
 ```
 
 ---
 
-### Method B — Download from Lineageos
+### Method B — Download from LineageOS
 
-Use this if you don't want download a 5GB+ AP file.
+Use this if you do not want to download a 5 GB+ AP file.
 
-1. Go to **[wiki.lineageos.org/devices/](https://wiki.lineageos.org/devices/)** .
-2. Enter your model number (e.g. `SM-G991B`). Find it at
+1. Go to **[wiki.lineageos.org/devices/](https://wiki.lineageos.org/devices/)**.
+2. Enter your model number (for example `SM-G991B`). You can find it in
    *Settings → About phone → Model number*.
-3. Go to guides → Update to a newer vendor firmware → Choose your model number.
-4. Download the File.
-   It is small (60–120MB).
-5. The file contains `up_param.bin` inside it.
+3. Open the guide for your device → **Update to a newer vendor firmware** →
+   choose your model number.
+4. Download the file. It is much smaller than a full firmware package.
+5. The file contains `up_param.bin`.
 
 ---
 
 ### Method C — Download from SamFW
 
-Use this if you don't have root yet, or want a clean stock up_param from a
-specific firmware version.
-
-> **Which file?** The `up_param.bin` lives inside the **AP (Application
-> Processor)** file. It is **NOT** inside BL, CP, or CSC.
-
 1. Go to **[samfw.com](https://samfw.com)** (free, no account needed).
-2. Enter your model number (e.g. `SM-G991B`). Find it at
-   *Settings → About phone → Model number*.
-3. Select your region/CSC (e.g. `DBT` = Germany, `BTU` = UK, `INS` = India,
-   `XFA` = Australia, `SER` = Philippines).
-4. Download the **AP file** only — it ends in `AP_*.tar.md5`.
-   It is large (3–5 GB).
-5. The AP file contains `up_param.bin` inside it.
+2. Enter your model number (for example `SM-G991B`).
+3. Select your region/CSC (for example `DBT`, `BTU`, `INS`, `XFA`, `SER`).
+4. Download the **AP** file only — it ends in `AP_*.tar.md5`.
+5. `up_param.bin` is inside the AP file. It is **not** in BL, CP or CSC.
 
-**Extract up_param.bin from the AP file (ZArchiver):**
-1. Long-press the AP `.tar.md5` → **"Open as archive"**.
-2. Find `up_param.bin` → long-press → **"Extract to..."**
-   → pick a folder like `/sdcard/up_param/`.
+**Extract with ZArchiver:**
+
+1. Long-press the AP `.tar.md5` → **Open as archive**.
+2. Find `up_param.bin` → long-press → **Extract to...** → choose
+   `/sdcard/up_param/`.
 
 **Extract with MiXplorer:**
-1. Long-press the AP file → **"Open as"** → **"Archive"**.
-2. Find `up_param.bin` → long-press → **"Copy"** → paste to your folder.
+
+1. Long-press the AP file → **Open as** → **Archive**.
+2. Find `up_param.bin` → long-press → **Copy** → paste into your folder.
 
 ---
 
 ## Extract & edit the images
 
-Once you have `up_param.bin`, extract the images from it:
+**ZArchiver:** long-press `up_param.bin` → **Open as archive** → extract all
+files to a folder such as `/sdcard/my_splash/`.
 
-**ZArchiver:** Long-press `up_param.bin` → "Open as archive" → extract all
-to a folder (e.g. `/sdcard/my_splash/`).
-
-**MiXplorer:** Long-press → "Open as" → "Archive" → select all → copy → paste.
+**MiXplorer:** long-press → **Open as** → **Archive** → select all → copy →
+paste into a folder.
 
 **Termux:**
+
 ```bash
 mkdir -p /sdcard/my_splash
 tar -xf /sdcard/up_param.bin -C /sdcard/my_splash
 ls /sdcard/my_splash
 ```
 
-Now edit whichever images you want. The most important is **`logo.jpg`** —
-the main power-on splash.
+Now edit whichever images you want. The most important is **`logo.jpg`** — the
+main power-on splash.
 
 **Image rules:**
-- Must be **JPEG** format (`.jpg`). Not PNG, not WEBP.
-- Keep the **exact original filename**.
-- Match your device's screen resolution (check originals in a gallery app —
-  usually 1080×2340, 1080×2400, or similar).
 
-Recommended free editors: **Snapseed**, **Adobe Lightroom Mobile**,
-**PixelLab**.
+- Use **JPEG** (`.jpg`). Not PNG or WEBP.
+- Keep the **exact original filename**.
+- Match your device's screen resolution. Check the originals in a gallery app;
+  common sizes are 1080×2340 and 1080×2400.
+- Do not put the images in subfolders inside the tar. They must be at the root
+  of the archive.
+- Use standard/baseline JPEG, not progressive JPEG.
+
+Recommended editors: **Snapseed**, **Adobe Lightroom Mobile**, **PixelLab**.
 
 ---
 
 ## Repack into up_param.bin
 
-#### ZArchiver
+You can use the included helper, which writes a proper uncompressed tar and
+verifies it:
+
+```bash
+sh tools/pack_up_param.sh /sdcard/my_splash /sdcard/up_param_new.bin
+```
+
+### ZArchiver
 
 1. Open ZArchiver → navigate to `/sdcard/my_splash/`.
-2. Select all JPEG files (long-press first, then tick the rest).
-3. Tap the **compress** button.
-4. Set format to **TAR** (no compression — scroll the format list).
-5. Name it `up_param` → tap OK.
-6. Long-press `up_param.tar` → **Rename** → change to `up_param.bin`.
+2. Select all JPEG files.
+3. Tap **compress**.
+4. Set format to **TAR** (no compression).
+5. Name it `up_param` → OK.
+6. Long-press `up_param.tar` → **Rename** → `up_param.bin`.
 
-#### MiXplorer
+### MiXplorer
 
 1. Navigate to `/sdcard/my_splash/` → select all JPEGs.
-2. **⋮ menu → Compress / Pack** → format: **TAR** → name: `up_param`.
+2. **⋮ menu → Compress / Pack** → format **TAR** → name `up_param`.
 3. Rename `up_param.tar` → `up_param.bin`.
 
-#### Termux (most reliable)
+### Termux (most reliable)
 
 ```bash
 cd /sdcard/my_splash
 tar -cf /sdcard/up_param_new.bin *.jpg
-
-# Verify
 tar -tf /sdcard/up_param_new.bin
 ```
 
@@ -232,37 +269,89 @@ tar -tf /sdcard/up_param_new.bin
 
 ## Flash methods
 
-### Method 1 — Magisk module (recommended)
+### Method 1 — Flash the ZIP in recovery
 
-Flashes at install time and reapplies on every boot — persists through OTAs.
+This is the recommended method when the device is not rooted or when the
+manager app reports a write failure.
 
-1. Open the module zip with ZArchiver or MiXplorer.
-2. Navigate to `up_param/` inside the zip.
-3. Paste your `up_param.bin` there (replacing any existing file).
-4. Save the zip.
-5. **Magisk app** → Modules → Install from storage → select the zip → reboot.
+1. Open the MOSS ZIP with ZArchiver or MiXplorer.
+2. Navigate to `up_param/` inside the ZIP.
+3. Add your file as `up_param/up_param.bin`.
+4. Save the ZIP.
+5. Boot into a **TWRP-based recovery** (TWRP, OrangeFox, PBRP, SHRP).
+6. If your `/data` is encrypted, decrypt it first so the module can be updated.
+7. **Install → select the ZIP → swipe to flash**.
+8. Reboot.
 
-**Or flash via TWRP** (recommended if Magisk app gives "dd write failed"):
-Boot TWRP → Install → Install Zip → select the zip → swipe to flash → reboot.
+What the installer does:
 
-The module automatically:
-- Detects your up_param partition
-- Takes a mandatory backup (aborts if backup fails — safe by design)
-- Validates your bin before writing
-- Reapplies on every boot via `post-fs-data.sh` and `service.sh`
+- Detects the `up_param` block device.
+- Takes a mandatory backup and aborts if the backup is invalid.
+- Validates the payload as an uncompressed tar archive.
+- Writes and reads back the partition to verify it.
+- Restores the original automatically if the write fails.
+- Installs the boot-time persistence module when a root manager is present.
+- Saves a restore copy to `/sdcard/MOSS/` when that storage is writable.
+
+If no root manager is detected, MOSS runs in **standalone recovery mode**: the
+splash is written once, and `/sdcard/MOSS/restore.sh` can restore the original
+when internal storage or an SD card is mounted. Reflash after a firmware
+update, because no boot script is installed.
+
+> If a previous MOSS module is already installed and `/data` is encrypted, the
+> recovery cannot update the module. Boot Android once and install the ZIP from
+> the manager app instead, or decrypt `/data` in recovery.
 
 ---
 
-### Method 2 — Termux dd (one-shot)
+### Method 2 — Install from a root manager
 
-No module needed. Does not persist through OTAs — re-run after firmware updates.
+1. Add `up_param/up_param.bin` to the ZIP as described above.
+2. Open **Magisk**, **KernelSU**, or **APatch**.
+3. Go to **Modules → Install from storage**.
+4. Select the ZIP and reboot.
+
+The module stores the custom payload at
+`/data/adb/modules/my_own_splash_screen/up_param/up_param.bin` and re-applies it
+at boot **only when the partition content differs**, avoiding unnecessary
+writes.
+
+KernelSU and APatch do not need ZygiskNext for this module.
+
+---
+
+### Method 3 — Termux dd (one-shot)
+
+No module needed. This does not persist across firmware updates.
 
 ```bash
 su
 dd if=/sdcard/up_param.bin of=/dev/block/by-name/up_param bs=4096
+sync
+reboot
 ```
 
-Reboot after the command completes.
+If the path does not exist, use the path found by
+`ls /dev/block/by-name/ | grep -i up_param`.
+
+---
+
+## How MOSS protects the partition
+
+- **Backup first:** the original partition is dumped before anything is written.
+  If the backup cannot be created or validated, the install aborts. On
+  reinstall, a valid backup from any known location is reused instead of
+  capturing the current partition again.
+- **Payload validation:** the new file must be a readable tar archive, and it
+  must not be larger than the partition.
+- **Read-back verification:** after writing, MOSS reads the partition back and
+  compares it with the payload.
+- **Automatic rollback:** if the write or verification fails, MOSS tries to write
+  the backup back immediately.
+- **No needless writes:** at boot, the module compares the partition with the
+  custom payload and skips the write when they already match.
+- **Safe uninstall:** `uninstall.sh` restores the original splash only when the
+  partition still contains the module's custom payload.
 
 ---
 
@@ -288,65 +377,125 @@ Reboot after the command completes.
 
 ## Troubleshooting
 
-**Splash didn't change after reboot**
-→ Flash from TWRP instead of Magisk app.
+**Splash did not change after reboot**
 
-**"up_param partition NOT found"**
-→ Run: `adb shell su -c "ls /dev/block/by-name/ | grep -i up"`
-→ Your device may use a different path or pre-date the S6.
+- Flash from a TWRP-based recovery instead of the manager app.
+- Check that `up_param.bin` is a valid tar: `tar -tf up_param.bin`.
+- Make sure the ZIP contains `up_param/up_param.bin`.
+
+**"up_param partition not found"**
+
+```bash
+adb shell su -c "ls /dev/block/by-name/ | grep -i up_param"
+```
+
+Your device may use a different path or may not have the partition.
 
 **"Permission denied" on dd**
-→ Grant Termux root in Magisk app → Superuser.
-→ Try `setenforce 0` before the dd command.
-→ Write to `/data/local/tmp/` instead of `/sdcard/`.
-→ Use `adb root` from a PC as a fallback.
 
-**"dd write failed" during module install**
-→ Flash from TWRP recovery instead.
+- Grant root to Termux in the manager app.
+- Try `setenforce 0` before the dd command.
+- Write the dump to `/data/local/tmp/` instead of `/sdcard/`.
+- Use `adb root` from a PC as a fallback.
+
+**"Write failed" during install**
+
+- Let MOSS restore the backup, then flash the ZIP from a TWRP-based recovery.
+- Decrypt `/data` in recovery so the module can be updated.
+- If you previously installed MOSS as a module, boot Android once and reinstall
+  from the manager app.
+
+**"No writable location for the mandatory backup"**
+
+- In recovery, mount **Data** and **Internal Storage**.
+- Make sure `/sdcard` is accessible.
 
 **Image looks garbled**
-→ Save as standard JPEG (not progressive). Match your screen resolution.
+
+- Save as standard JPEG (not progressive).
+- Match your device's resolution.
+- Keep the original filename and do not use subfolders in the tar.
 
 **Does this trip Knox?**
-→ No. Writing to `up_param` does NOT trip Knox. Knox eFuse is only blown by
-unlocking the bootloader.
 
-**KernelSU support?**
-→ Yes — install via KernelSU's module manager with ZygiskNext.
+Writing `up_param` through root does not usually trip Knox. Unlocking the
+bootloader can trip Knox independently. Check your model's warranty rules.
+
+**LineageOS Recovery says the ZIP signature is invalid**
+
+LineageOS Recovery only installs its own signed OTA packages. Use a
+TWRP-based recovery, the root manager app, or the Termux dd method.
 
 ---
 
-## Restore original splash
+## Restore the original splash
 
-Your original is automatically backed up during installation to:
-`/data/adb/samsung_splash_backup/up_param_original.bin`
+The original is backed up during installation. Possible locations:
+
+- `/data/adb/samsung_splash_backup/up_param_original.bin`
+- `/sdcard/MOSS/up_param_original.bin`
+- `/sdcard/MOSS/backup/up_param_original.bin`
+- `/external_sd/MOSS/...`, `/sdcard1/MOSS/...`, or `/usb-otg/MOSS/...`
+- `/tmp/MOSS/backup/up_param_original.bin` (temporary)
 
 **Restore with the included script:**
+
 ```bash
 su
 sh /data/adb/modules/my_own_splash_screen/tools/restore_up_param.sh
 reboot
 ```
 
-**Or manually:**
+If you used standalone recovery mode, the script is copied to
+`/sdcard/MOSS/restore.sh`:
+
 ```bash
 su
-dd if=/data/adb/samsung_splash_backup/up_param_original.bin \
-   of=/dev/block/by-name/up_param bs=4096
+sh /sdcard/MOSS/restore.sh
 reboot
 ```
 
-**Or uninstall the module** (stops reapply but does not restore the partition):
-Magisk app → Modules → trash icon next to *My Own Splash Screen* → reboot.
+You can also pass a backup path explicitly:
+
+```bash
+sh /sdcard/MOSS/restore.sh /sdcard/MOSS/up_param_original.bin
+```
+
+If no persistent storage was mounted during installation, the backup is in
+`/tmp/MOSS/backup` only until reboot. In that case, extract
+`tools/restore_up_param.sh` from the ZIP and keep your own copy of the original
+partition dump.
+
+**Or restore manually:**
+
+```bash
+su
+dd if=/sdcard/MOSS/up_param_original.bin \
+   of=/dev/block/by-name/up_param bs=4096
+sync
+reboot
+```
+
+**Uninstalling the module:** removes boot-time re-application and restores the
+original splash if the partition still contains the module's custom payload.
+A factory reset also removes the module and the `/data` backup, so keep the
+`/sdcard/MOSS/` copy if you may need it later.
 
 ---
 
 ## Credits
 
 - Inspired by the **Oh My Font** Magisk module approach
-- `up_param` format first introduced on Samsung Galaxy S6 (April 2015)
+- `up_param` format first introduced on the Samsung Galaxy S6 (April 2015)
 - Module by **sofikuw**
 
 ---
 
-*⚠️ Disclaimer: Not responsible for any damage. Always backup first. Exynos only — does not work on Qualcomm Snapdragon Samsung devices. Flash at your own risk.*
+## License
+
+GPL-3.0. See [LICENSE](LICENSE).
+
+---
+
+*Disclaimer: Not responsible for any damage. Always keep a backup. Exynos only.
+Flash at your own risk.*

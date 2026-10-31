@@ -1,0 +1,13 @@
+Put your file here and name it exactly:
+
+    up_param.bin
+
+The file must be an uncompressed TAR archive containing your splash JPEGs
+(logo.jpg, lpm.jpg, download.jpg, ...). Do not zip it and do not use PNG.
+
+You can create it with:
+
+    sh tools/pack_up_param.sh /sdcard/my_splash /sdcard/up_param.bin
+
+Then copy /sdcard/up_param.bin into this folder and flash the ZIP from a
+TWRP-based recovery, Magisk, KernelSU, or APatch.
